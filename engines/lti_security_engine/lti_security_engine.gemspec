@@ -9,9 +9,9 @@ Gem::Specification.new do |s|
   s.version     = LtiSecurityEngine::VERSION
   s.authors     = ["Brad Humphrey"]
   s.email       = ["brad@instructure.com"]
-  s.homepage    = ""
-  s.summary     = "TODO: Summary of LtiSecurityEngine."
-  s.description = "TODO: Description of LtiSecurityEngine."
+  s.homepage    = "https://github.com/wbhumphrey/lti_security"
+  s.summary     = "App for externally managing lti security"
+  s.description = "Allows other apps to authenticate via LTI with a simple gem"
 
   s.files = Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.rdoc"]
   s.test_files = Dir["test/**/*"]
