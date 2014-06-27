@@ -1,5 +1,6 @@
 module LtiSecurityEngine
-  class LtiLaunchController < ApplicationController
+  class LtiLaunchesController < ApplicationController
+
     def create
       unless params[:launch_params] && security_contract = SecurityContract.where(key: params[:launch_params][:oauth_consumer_key]).first
         return render json: {error: 'Invalid consumer key'}, status: 400
@@ -11,6 +12,7 @@ module LtiSecurityEngine
           'uri' => params[:launch_url],
           'parameters' => params[:launch_params]
       }
+
       if !tp.valid_request?(request_params)
         return render json: {error: 'Invalid signature'}, status: 400
       end
@@ -34,6 +36,12 @@ module LtiSecurityEngine
     end
 
     def show
+      request_proxy = OAuth::RequestProxy.proxy(request)
+      vendor = Vendor.where(code: request_proxy.parameters["oauth_consumer_key"]).first
+      unless vendor && OAuth::Signature.build(request_proxy, :consumer_secret => vendor.shared_secret).verify()
+        return render json: {error: 'unauthorized'}, status: 401
+      end
+
       if params[:id].start_with? "nonce:"
         nonce = params[:id].sub('nonce:', '').strip
         lti_launch = LtiLaunch.where(nonce: nonce).first

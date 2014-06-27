@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140625195338) do
+ActiveRecord::Schema.define(version: 20140626200557) do
 
   create_table "lti_security_engine_lti_launches", force: true do |t|
     t.integer  "security_contract_id"
@@ -33,6 +33,7 @@ ActiveRecord::Schema.define(version: 20140625195338) do
     t.text   "description"
     t.string "website"
     t.string "email"
+    t.string "shared_secret"
   end
 
 end

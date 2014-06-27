@@ -1,7 +1,7 @@
-require 'spec_helper'
+require 'rails_helper'
 
 module LtiSecurityEngine
-  describe LtiLaunchController do
+  describe LtiLaunchesController do
     describe "#create" do
       before(:each) do
         @security_contract = SecurityContract.create!(key: 'key', shared_secret: 'secret')
@@ -68,9 +68,11 @@ module LtiSecurityEngine
       end
     end
 
-    describe "#show" do
+    describe "#show", type: :request do
+
       before(:each) do
-        @security_contract = SecurityContract.create!(key: 'key', shared_secret: 'secret')
+        @vendor = Vendor.create!(code: 'my_vendor', shared_secret: 'auth_secret')
+        @security_contract = @vendor.security_contracts.create!(key: 'key', shared_secret: 'secret')
 
         @lti_launch = @security_contract.lti_launches.create!(
             nonce: 'nonce',
@@ -78,8 +80,14 @@ module LtiSecurityEngine
         )
       end
 
+      it "requires authentication" do
+        get "/lti_security_engine/lti_launches/#{@lti_launch.id}"
+
+        expect(response.code).to eq "401"
+      end
+
       it "returns a saved lti launch by id" do
-        get :show, id: @lti_launch.id
+        get signed_path(@vendor.code, @vendor.shared_secret, "/lti_security_engine/lti_launches/#{@lti_launch.id}")
         lti_launches = JSON.parse(response.body)['lti_launches']
         lti_launch_json = lti_launches.first
 
@@ -91,7 +99,7 @@ module LtiSecurityEngine
       end
 
       it "returns a saved lti launch by nonce" do
-        get :show, id: "nonce:#{@lti_launch.nonce}"
+        get signed_path(@vendor.code, @vendor.shared_secret, "/lti_security_engine/lti_launches/nonce:#{@lti_launch.nonce}")
         lti_launches = JSON.parse(response.body)['lti_launches']
         lti_launch_json = lti_launches.first
 
@@ -103,7 +111,7 @@ module LtiSecurityEngine
       end
 
       it "returns a 404 when the launch is not found" do
-        get :show, id: "fake"
+        get signed_path(@vendor.code, @vendor.shared_secret, "/lti_security_engine/lti_launches/fake")
 
         expect(response.code).to eq "404"
       end
